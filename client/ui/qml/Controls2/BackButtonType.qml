@@ -10,6 +10,13 @@ Item {
     property string backButtonImage: "qrc:/images/controls/arrow-left.svg"
     property var backButtonFunction
 
+    property bool isFocusable: true
+
+    Keys.onTabPressed: {
+        console.debug("--> Tab is pressed on ", objectName)
+        FocusController.nextKeyTabItem()
+    }
+    
     implicitWidth: content.implicitWidth
     implicitHeight: content.implicitHeight
 

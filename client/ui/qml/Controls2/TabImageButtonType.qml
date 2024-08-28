@@ -13,7 +13,12 @@ TabButton {
     property string image
 
     property bool isSelected: false
-    property bool focusable: true
+    property bool isFocusable: true
+
+    Keys.onTabPressed: {
+        console.debug("--> Tab is pressed on ", objectName)
+        FocusController.nextKeyTabItem()
+    }
 
     property string borderFocusedColor: AmneziaStyle.color.paleGray
     property int borderFocusedWidth: 1
@@ -42,7 +47,7 @@ TabButton {
         cursorShape: Qt.PointingHandCursor
         enabled: false
     }
-
+    
     Keys.onEnterPressed: {
         if (root.clickedFunc && typeof root.clickedFunc === "function") {
             root.clickedFunc()

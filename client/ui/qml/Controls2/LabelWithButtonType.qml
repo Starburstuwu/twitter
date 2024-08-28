@@ -40,6 +40,13 @@ Item {
     property bool descriptionOnTop: false
     property bool hideDescription: true
 
+    property bool isFocusable: true
+
+    Keys.onTabPressed: {
+        console.debug("--> Tab is pressed on ", objectName)
+        FocusController.nextKeyTabItem()
+    }
+    
     implicitWidth: content.implicitWidth + content.anchors.topMargin + content.anchors.bottomMargin
     implicitHeight: content.implicitHeight + content.anchors.leftMargin + content.anchors.rightMargin
 

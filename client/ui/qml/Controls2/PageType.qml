@@ -49,8 +49,9 @@ Item {
     // Set a timer to set focus after a short delay
     Timer {
         id: timer
-        interval: 100 // Milliseconds
+        interval: 500 // Milliseconds
         onTriggered: {
+            FocusController.reload()
             if (defaultActiveFocusItem) {
                 defaultActiveFocusItem.forceActiveFocus()
             }

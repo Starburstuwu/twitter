@@ -23,9 +23,6 @@ PageType {
 
     Component.onCompleted: {
         console.log("############ pageStart completed")
-        FocusController.reload()
-        focusedItem = FocusController.currentFocusedItem()
-        console.log("-> ", focusedItem)
     }
 
     Connections {

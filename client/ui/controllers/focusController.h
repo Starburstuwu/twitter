@@ -15,7 +15,7 @@ public:
     explicit FocusController(QQmlApplicationEngine* engine, QObject *parent = nullptr);
     ~FocusController();
 
-    Q_INVOKABLE QObject* nextKeyTabItem();
+    // Q_INVOKABLE QObject* nextKeyTabItem();
     QObject* previousKeyTabItem();
     QObject* nextKeyUpItem();
     QObject* nextKeyDownItem();
@@ -31,15 +31,20 @@ signals:
     void nextKeyDownItemChanged(QObject* item);
     void nextKeyLeftItemChanged(QObject* item);
     void nextKeyRightItemChanged(QObject* item);
+    void focusChainChanged();
 
 public slots:
     void reload();
+    void getFocusChain();
+    void nextKeyTabItem();
 
 private:
-    QQmlApplicationEngine* m_engine;
-    QList<QObject*> m_focus_chain;
-    QObject* m_current_focused_item;
-    qsizetype m_current_index;
+    QList<QObject*> getSubChain(QObject* item);
+
+    QQmlApplicationEngine* m_engine; //< Pointer to engine to get root object
+    QList<QObject*> m_focus_chain; //< List of current objects to be focused
+    QQuickItem* m_focused_item; //< Pointer to the active focus item
+    qsizetype m_focused_item_index; //< Active focus item's index in focus chain
 };
 
 #endif // FOCUSCONTROLLER_H

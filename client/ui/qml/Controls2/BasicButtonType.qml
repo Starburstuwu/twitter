@@ -34,6 +34,13 @@ Button {
 
     property alias buttonTextLabel: buttonText
 
+    property bool isFocusable: true
+
+    Keys.onTabPressed: {
+        console.debug("--> Tab is pressed on ", objectName)
+        FocusController.nextKeyTabItem()
+    }
+    
     implicitHeight: 56
 
     hoverEnabled: true

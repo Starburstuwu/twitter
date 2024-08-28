@@ -50,13 +50,6 @@ PageType {
             anchors.topMargin: 34
             anchors.bottomMargin: 34
 
-            Item {
-                id: focusItem
-                KeyNavigation.tab: loggingButton.visible ?
-                                       loggingButton :
-                                       connectButton
-            }
-
             BasicButtonType {
                 id: loggingButton
                 objectName: "loggingButton"
