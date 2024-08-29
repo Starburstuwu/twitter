@@ -694,7 +694,16 @@ bool ServersModel::isDefaultServerDefaultContainerHasSplitTunneling()
             QJsonObject serverProtocolConfig = container.value(ContainerProps::containerTypeToString(defaultContainer)).toObject();
             QString clientProtocolConfigString = serverProtocolConfig.value(config_key::last_config).toString();
             QJsonObject clientProtocolConfig = QJsonDocument::fromJson(clientProtocolConfigString.toUtf8()).object();
-            return (clientProtocolConfigString.contains("AllowedIPs") && !clientProtocolConfigString.contains("AllowedIPs = 0.0.0.0/0, ::/0"))
+            QString nativeProtocolConfigString = clientProtocolConfig.value(config_key::config).toString();
+
+            const static QRegularExpression allowedIpsRegExp("AllowedIPs\\s*=\\s*([^\n]*)");
+            QRegularExpressionMatch allowedIpsMatch = allowedIpsRegExp.match(nativeProtocolConfigString);
+            QString allowedIpsString;
+            if (allowedIpsMatch.hasCaptured(1)) {
+                allowedIpsString = allowedIpsMatch.captured(1);
+            }
+
+            return !allowedIpsString.contains("0.0.0.0/0")
                     || (!clientProtocolConfig.value(config_key::allowed_ips).toArray().isEmpty()
                         && !clientProtocolConfig.value(config_key::allowed_ips).toArray().contains("0.0.0.0/0"));
         } else if (defaultContainer == DockerContainer::Cloak || defaultContainer == DockerContainer::OpenVpn
