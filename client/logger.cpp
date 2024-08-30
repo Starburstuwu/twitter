@@ -25,6 +25,7 @@
 QFile Logger::m_file;
 QTextStream Logger::m_textStream;
 QString Logger::m_logFileName = QString("%1.log").arg(APPLICATION_NAME);
+QString Logger::m_serviceLogFileName = QString("%1.log").arg(SERVICE_NAME);
 
 void debugMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
@@ -132,6 +133,11 @@ QString Logger::userLogsFilePath()
     return userLogsDir() + QDir::separator() + m_logFileName;
 }
 
+QString Logger::serviceLogsFilePath()
+{
+    return Utils::systemLogPath() + QDir::separator() + m_serviceLogFileName;
+}
+
 QString Logger::getLogFile()
 {
     m_file.flush();
@@ -140,6 +146,22 @@ QString Logger::getLogFile()
     file.open(QIODevice::ReadOnly);
     QString qtLog = file.readAll();
     
+#ifdef Q_OS_IOS
+    return QString().fromStdString(AmneziaVPN::swiftUpdateLogData(qtLog.toStdString()));
+#else
+    return qtLog;
+#endif
+
+}
+
+QString Logger::getServiceLogFile()
+{
+    m_file.flush();
+    QFile file(serviceLogsFilePath());
+
+    file.open(QIODevice::ReadOnly);
+    QString qtLog = file.readAll();
+
 #ifdef Q_OS_IOS
     return QString().fromStdString(AmneziaVPN::swiftUpdateLogData(qtLog.toStdString()));
 #else
@@ -167,7 +189,10 @@ bool Logger::openServiceLogsFolder()
 #ifdef Q_OS_WIN
     path = "file:///" + path;
 #endif
-    QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(path))) {
+        qWarning() << "Can't open url:" << path;
+        return false;
+    }
     return true;
 }
 
