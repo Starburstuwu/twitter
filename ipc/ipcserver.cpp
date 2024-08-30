@@ -5,6 +5,7 @@
 #include <QLocalSocket>
 #include <QFileInfo>
 
+#include "qjsonarray.h"
 #include "router.h"
 #include "logger.h"
 
@@ -185,6 +186,7 @@ void IpcServer::StartRoutingIpv6()
 {
     Router::StartRoutingIpv6();
 }
+
 void IpcServer::StopRoutingIpv6()
 {
     Router::StopRoutingIpv6();
@@ -203,7 +205,6 @@ void IpcServer::setLogsEnabled(bool enabled)
         Logger::deinit();
     }
 }
-
 
 bool IpcServer::enableKillSwitch(const QJsonObject &configStr, int vpnAdapterIndex)
 {
@@ -291,7 +292,6 @@ bool IpcServer::enableKillSwitch(const QJsonObject &configStr, int vpnAdapterInd
     MacOSFirewall::setAnchorEnabled(QStringLiteral("310.blockDNS"), true);
     MacOSFirewall::setAnchorTable(QStringLiteral("310.blockDNS"), true, QStringLiteral("dnsaddr"), dnsServers);
 #endif
-
     return true;
 }
 
@@ -310,6 +310,196 @@ bool IpcServer::disableKillSwitch()
 #endif
 
     return true;
+}
+
+bool IpcServer::startIPsec(QString tunnelName)
+{
+#ifdef Q_OS_LINUX
+    QProcess processSystemd;
+    QStringList commandsSystemd;
+    commandsSystemd << "systemctl" << "restart" << "ipsec";
+    processSystemd.start("sudo", commandsSystemd);
+    if (!processSystemd.waitForStarted(1000))
+    {
+        qDebug().noquote() << "Could not start ipsec tunnel!\n";
+        return false;
+    }
+    else if (!processSystemd.waitForFinished(2000))
+    {
+        qDebug().noquote() << "Could not start ipsec tunnel\n";
+        return false;
+    }
+    commandsSystemd.clear();
+
+    QThread::msleep(5000);
+
+    QProcess process;
+    QStringList commands;
+    commands << "ipsec" << "up" << QString("%1").arg(tunnelName);
+    process.start("sudo", commands);
+    if (!process.waitForStarted(1000))
+    {
+        qDebug().noquote() << "Could not start ipsec tunnel!\n";
+        return false;
+    }
+    else if (!process.waitForFinished(2000))
+    {
+        qDebug().noquote() << "Could not start ipsec tunnel\n";
+        return false;
+    }
+    commands.clear();
+#endif
+    return true;
+}
+
+bool IpcServer::stopIPsec(QString tunnelName)
+{
+#ifdef Q_OS_LINUX
+    QProcess process;
+    QStringList commands;
+    commands << "ipsec" << "down" << QString("%1").arg(tunnelName);
+    process.start("sudo", commands);
+    if (!process.waitForStarted(1000))
+    {
+        qDebug().noquote() << "Could not stop ipsec tunnel\n";
+        return false;
+    }
+    else if (!process.waitForFinished(2000))
+    {
+        qDebug().noquote() << "Could not stop ipsec tunnel\n";
+        return false;
+    }
+    commands.clear();
+#endif
+    return true;
+}
+
+bool IpcServer::writeIPsecConfig(QString config)
+{
+#ifdef Q_OS_LINUX
+    qDebug() << "IPSEC: IPSec config file";
+    QString configFile = QString("/etc/ipsec.conf");
+    QFile ipSecConfFile(configFile);
+    if (ipSecConfFile.open(QIODevice::WriteOnly)) {
+        ipSecConfFile.write(config.toUtf8());
+        ipSecConfFile.close();
+    }
+#endif
+    return true;
+}
+
+bool IpcServer::writeIPsecUserCert(QString usercert, QString uuid)
+{
+#ifdef Q_OS_LINUX
+    qDebug() << "IPSEC: Write user cert " << uuid;
+    QString certName = QString("/etc/ipsec.d/certs/%1.crt").arg(uuid);
+    QFile userCertFile(certName);
+    if (userCertFile.open(QIODevice::WriteOnly)) {
+        userCertFile.write(usercert.toUtf8());
+        userCertFile.close();
+    }
+#endif
+    return true;
+}
+
+bool IpcServer::writeIPsecCaCert(QString cacert, QString uuid)
+{
+#ifdef Q_OS_LINUX
+    qDebug() << "IPSEC: Write CA cert user " << uuid;
+    QString certName = QString("/etc/ipsec.d/cacerts/%1.crt").arg(uuid);
+    QFile caCertFile(certName);
+    if (caCertFile.open(QIODevice::WriteOnly)) {
+        caCertFile.write(cacert.toUtf8());
+        caCertFile.close();
+    }
+#endif
+    return true;
+}
+
+bool IpcServer::writeIPsecPrivate(QString privKey, QString uuid)
+{
+#ifdef Q_OS_LINUX
+    qDebug() << "IPSEC: User private key " << uuid;
+    QString privateKey = QString("/etc/ipsec.d/private/%1.p12").arg(uuid);
+    QFile pKeyFile(privateKey);
+    if (pKeyFile.open(QIODevice::WriteOnly)) {
+        pKeyFile.write(QByteArray::fromBase64(privKey.toUtf8()));
+        pKeyFile.close();
+    }
+#endif
+    return true;
+}
+
+
+bool IpcServer::writeIPsecPrivatePass(QString pass, QString host, QString uuid)
+{
+#ifdef Q_OS_LINUX
+    qDebug() << "IPSEC: User private key " << uuid;
+    const QString secretsFilename = "/etc/ipsec.secrets";
+    QStringList lines;
+
+    {
+        QFile secretsFile(secretsFilename);
+        if (secretsFile.open(QIODevice::ReadOnly | QIODevice::Text))
+        {
+            QTextStream edit(&secretsFile);
+            while (!edit.atEnd()) lines.push_back(edit.readLine());
+        }
+        secretsFile.close();
+    }
+
+    for (auto iter = lines.begin(); iter!=lines.end();)
+    {
+        if (iter->contains(host))
+        {
+            iter = lines.erase(iter);
+        }
+        else
+        {
+            ++iter;
+        }
+    }
+
+    {
+        QFile secretsFile(secretsFilename);
+        if (secretsFile.open(QIODevice::WriteOnly | QIODevice::Text))
+        {
+            QTextStream edit(&secretsFile);
+            for (int i=0; i<lines.size(); i++) edit << lines[i] << Qt::endl;
+        }
+        QString P12 = QString("%any %1 : P12 %2.p12 \"%3\" \n").arg(host, uuid, pass);
+        secretsFile.write(P12.toUtf8());
+        secretsFile.close();
+    }
+#endif
+    return true;
+}
+
+QString IpcServer::getTunnelStatus(QString tunnelName)
+{
+#ifdef Q_OS_LINUX
+    QProcess process;
+    QStringList commands;
+    commands << "ipsec" << "status" << QString("%1").arg(tunnelName);
+    process.start("sudo", commands);
+    if (!process.waitForStarted(1000))
+    {
+        qDebug().noquote() << "Could not stop ipsec tunnel\n";
+        return "";
+    }
+    else if (!process.waitForFinished(2000))
+    {
+        qDebug().noquote() << "Could not stop ipsec tunnel\n";
+        return "";
+    }
+    commands.clear();
+
+
+    QString status = process.readAll();
+    return status;
+#endif
+    return QString();
+
 }
 
 bool IpcServer::enablePeerTraffic(const QJsonObject &configStr)
