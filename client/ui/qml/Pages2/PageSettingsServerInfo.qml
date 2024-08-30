@@ -133,7 +133,7 @@ PageType {
                         }
                     }
 
-                    expandedContent: ColumnLayout {
+                    expandedStateContent: ColumnLayout {
                         anchors.top: parent.top
                         anchors.left: parent.left
                         anchors.right: parent.right

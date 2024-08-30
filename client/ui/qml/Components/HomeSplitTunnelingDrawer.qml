@@ -16,7 +16,7 @@ DrawerType2 {
     anchors.fill: parent
     expandedHeight: parent.height * 0.9
 
-    expandedContent: ColumnLayout {
+    expandedStateContent: ColumnLayout {
         id: content
 
         anchors.top: parent.top
@@ -41,11 +41,6 @@ DrawerType2 {
 
             headerText: qsTr("Split tunneling")
             descriptionText:  qsTr("Allows you to connect to some sites or applications through a VPN connection and bypass others")
-        }
-
-        Item {
-            id: focusItem
-            KeyNavigation.tab: splitTunnelingSwitch.visible ? splitTunnelingSwitch : siteBasedSplitTunnelingSwitch.rightButton
         }
 
         LabelWithButtonType {

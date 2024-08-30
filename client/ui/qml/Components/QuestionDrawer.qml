@@ -20,7 +20,7 @@ DrawerType2 {
     property var yesButtonFunction
     property var noButtonFunction
 
-    expandedContent: ColumnLayout {
+    expandedStateContent: ColumnLayout {
         id: content
 
         anchors.top: parent.top

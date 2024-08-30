@@ -190,7 +190,7 @@ Item {
             root.popupClosedFunc()
         }
 
-        expandedContent: Item {
+        expandedStateContent: Item {
             id: container
             implicitHeight: menu.expandedHeight
 

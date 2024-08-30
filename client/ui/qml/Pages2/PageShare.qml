@@ -209,7 +209,7 @@ PageType {
                         }
                     }
 
-                    expandedContent: ColumnLayout {
+                    expandedStateContent: ColumnLayout {
                         id: shareFullAccessDrawerContent
                         anchors.top: parent.top
                         anchors.left: parent.left
@@ -774,7 +774,7 @@ PageType {
 
                             anchors.fill: parent
 
-                            expandedContent: ColumnLayout {
+                            expandedStateContent: ColumnLayout {
                                 id: expandedContent
                                 anchors.top: parent.top
                                 anchors.left: parent.left
@@ -881,7 +881,7 @@ PageType {
                                             }
                                         }
 
-                                        expandedContent: ColumnLayout {
+                                        expandedStateContent: ColumnLayout {
                                             anchors.top: parent.top
                                             anchors.left: parent.left
                                             anchors.right: parent.right

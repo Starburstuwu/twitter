@@ -119,7 +119,7 @@ PageType {
 
                             anchors.fill: parent
                             expandedHeight: parent.height * 0.9
-                            expandedContent: Item {
+                            expandedStateContent: Item {
                                 Connections {
                                     target: showDetailsDrawer
                                     enabled: !GC.isMobile()

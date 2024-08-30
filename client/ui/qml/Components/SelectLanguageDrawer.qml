@@ -11,7 +11,7 @@ import "../Config"
 DrawerType2 {
     id: root
 
-    expandedContent: Item {
+    expandedStateContent: Item {
         id: container
 
         implicitHeight: root.height * 0.9

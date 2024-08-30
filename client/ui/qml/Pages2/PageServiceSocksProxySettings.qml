@@ -206,7 +206,7 @@ PageType {
                             }
                         }
 
-                        expandedContent: ColumnLayout {
+                        expandedStateContent: ColumnLayout {
                             property string tempPort: port
                             property string tempUsername: username
                             property string tempPassword: password

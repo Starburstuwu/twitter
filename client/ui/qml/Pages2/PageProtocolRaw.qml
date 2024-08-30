@@ -129,7 +129,7 @@ PageType {
                             parent: root
                             anchors.fill: parent
 
-                            expandedContent: Item {
+                            expandedStateContent: Item {
                                 implicitHeight: configContentDrawer.expandedHeight
 
                                 Connections {

@@ -31,7 +31,7 @@ Item {
     // Set a timer to set focus after a short delay
     Timer {
         id: timer
-        interval: 1000 // Milliseconds
+        interval: 1000 // Milliseconds // TODO: return to 500
         onTriggered: {
             // FocusController.reload()
         }

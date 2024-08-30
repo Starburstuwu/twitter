@@ -139,7 +139,7 @@ Window  {
             anchors.fill: parent
             expandedHeight: root.height * 0.35
 
-            expandedContent: ColumnLayout {
+            expandedStateContent: ColumnLayout {
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right

@@ -9,17 +9,17 @@ import "TextTypes"
 Item {
     id: root
 
-    readonly property string drawerExpanded: "expanded"
-    readonly property string drawerCollapsed: "collapsed"
+    readonly property string drawerExpandedStateName: "expanded"
+    readonly property string drawerCollapsedStateName: "collapsed"
 
-    readonly property bool isOpened: drawerContent.state === root.drawerExpanded || (drawerContent.state === root.drawerCollapsed && dragArea.drag.active === true)
-    readonly property bool isClosed: drawerContent.state === root.drawerCollapsed && dragArea.drag.active === false
+    readonly property bool isExpandedStateActive: drawerContent.state === root.drawerExpandedStateName
+    readonly property bool isCollapsedStateActive: drawerContent.state === root.drawerCollapsedStateName
 
-    readonly property bool isExpanded: drawerContent.state === root.drawerExpanded
-    readonly property bool isCollapsed: drawerContent.state === root.drawerCollapsed
+    readonly property bool isOpened: root.isExpandedStateActive || (isCollapsedStateActive && dragArea.drag.active === true)
+    readonly property bool isClosed: root.isCollapsedStateActive && (dragArea.drag.active === false)
 
-    property Component collapsedContent
-    property Component expandedContent
+    property Component collapsedStateContent
+    property Component expandedStateContent
 
     property string defaultColor: AmneziaStyle.color.onyxBlack
     property string borderColor: AmneziaStyle.color.slateGray
@@ -29,8 +29,8 @@ Item {
 
     property int depthIndex: 0
 
-    signal entered
-    signal exited
+    signal cursorEntered
+    signal cursorExited
     signal pressed(bool pressed, bool entered)
 
     signal aboutToHide
@@ -40,18 +40,25 @@ Item {
     signal closed
     signal opened
 
+    property bool isFocusable: true
+    
+    // Keys.onTabPressed: {
+    //     console.debug("--> Tab is pressed on ", objectName)
+    //     FocusController.nextKeyTabItem()
+    // }
+
     Connections {
         target: PageController
 
         function onCloseTopDrawer() {
             if (depthIndex === PageController.getDrawerDepth()) {
-                if (isCollapsed) {
+                if (isCollapsedStateActive) {
                     return
                 }
 
                 aboutToHide()
 
-                drawerContent.state = root.drawerCollapsed
+                drawerContent.state = root.drawerCollapsedStateName
                 depthIndex = 0
                 closed()
             }
@@ -62,26 +69,26 @@ Item {
         target: root
 
         function onClose() {
-            if (isCollapsed) {
+            if (isCollapsedStateActive) {
                 return
             }
 
             aboutToHide()
 
-            drawerContent.state = root.drawerCollapsed
+            drawerContent.state = root.drawerCollapsedStateName
             depthIndex = 0
             PageController.setDrawerDepth(PageController.getDrawerDepth() - 1)
             closed()
         }
 
         function onOpen() {
-            if (isExpanded) {
+            if (isExpandedStateActive) {
                 return
             }
 
             aboutToShow()
 
-            drawerContent.state = root.drawerExpanded
+            drawerContent.state = root.drawerExpandedStateName
             depthIndex = PageController.getDrawerDepth() + 1
             PageController.setDrawerDepth(depthIndex)
             opened()
@@ -92,7 +99,7 @@ Item {
         id: background
 
         anchors.fill: parent
-        color: root.isCollapsed ? AmneziaStyle.color.transparent : Qt.rgba(14/255, 14/255, 17/255, 0.8)
+        color: root.isCollapsedStateActive ? AmneziaStyle.color.transparent : Qt.rgba(14/255, 14/255, 17/255, 0.8)
 
         Behavior on color {
             PropertyAnimation { duration: 200 }
@@ -102,7 +109,7 @@ Item {
     MouseArea {
         id: emptyArea
         anchors.fill: parent
-        enabled: root.isExpanded
+        enabled: root.isExpandedStateActive
         visible: enabled
         onClicked: {
             root.close()
@@ -113,7 +120,7 @@ Item {
         id: dragArea
 
         anchors.fill: drawerContentBackground
-        cursorShape: root.isCollapsed ? Qt.PointingHandCursor : Qt.ArrowCursor
+        cursorShape: root.isCollapsedStateActive ? Qt.PointingHandCursor : Qt.ArrowCursor
         hoverEnabled: true
 
         enabled: drawerContent.implicitHeight > 0
@@ -125,28 +132,30 @@ Item {
 
         /** If drag area is released at any point other than min or max y, transition to the other state */
         onReleased: {
-            if (root.isCollapsed && drawerContent.y < dragArea.drag.maximumY) {
+            if (root.isCollapsedStateActive && drawerContent.y < dragArea.drag.maximumY) {
                 root.open()
                 return
             }
-            if (root.isExpanded && drawerContent.y > dragArea.drag.minimumY) {
+            if (root.isExpandedStateActive && drawerContent.y > dragArea.drag.minimumY) {
                 root.close()
                 return
             }
         }
 
         onEntered: {
-            root.entered()
+            console.log("===>> dragArea cursor entered")
+            root.cursorEntered()
         }
         onExited: {
-            root.exited()
+            console.log("===>> dragArea cursor exited")
+            root.cursorExited()
         }
         onPressedChanged: {
             root.pressed(pressed, entered)
         }
 
         onClicked: {
-            if (root.isCollapsed) {
+            if (root.isCollapsedStateActive) {
                 root.open()
             }
         }
@@ -179,19 +188,19 @@ Item {
         anchors.right: root.right
         anchors.left: root.left
         y: root.height - drawerContent.height
-        state: root.drawerCollapsed
+        state: root.drawerCollapsedStateName
 
-        implicitHeight: root.isCollapsed ? collapsedHeight : expandedHeight
+        implicitHeight: root.isCollapsedStateActive ? collapsedHeight : expandedHeight
 
         onStateChanged: {
-            if (root.isCollapsed) {
+            if (root.isCollapsedStateActive) {
                 var initialPageNavigationBarColor = PageController.getInitialPageNavigationBarColor()
                 if (initialPageNavigationBarColor !== 0xFF1C1D21) {
                     PageController.updateNavigationBarColor(initialPageNavigationBarColor)
                 }
                 return
             }
-            if (root.isExpanded) {
+            if (root.isExpandedStateActive) {
                 if (PageController.getInitialPageNavigationBarColor() !== 0xFF1C1D21) {
                     PageController.updateNavigationBarColor(0xFF1C1D21)
                 }
@@ -201,14 +210,14 @@ Item {
 
         states: [
             State {
-                name: root.drawerCollapsed
+                name: root.drawerCollapsedStateName
                 PropertyChanges {
                     target: drawerContent
                     y: root.height - root.collapsedHeight
                 }
             },
             State {
-                name: root.drawerExpanded
+                name: root.drawerExpandedStateName
                 PropertyChanges {
                     target: drawerContent
                     y: dragArea.drag.minimumY
@@ -219,8 +228,8 @@ Item {
 
         transitions: [
             Transition {
-                from: root.drawerCollapsed
-                to: root.drawerExpanded
+                from: root.drawerCollapsedStateName
+                to: root.drawerExpandedStateName
                 PropertyAnimation {
                     target: drawerContent
                     properties: "y"
@@ -228,8 +237,8 @@ Item {
                 }
             },
             Transition {
-                from: root.drawerExpanded
-                to: root.drawerCollapsed
+                from: root.drawerExpandedStateName
+                to: root.drawerCollapsedStateName
                 PropertyAnimation {
                     target: drawerContent
                     properties: "y"
@@ -241,7 +250,7 @@ Item {
         Loader {
             id: collapsedLoader
 
-            sourceComponent: root.collapsedContent
+            sourceComponent: root.collapsedStateContent
 
             anchors.right: parent.right
             anchors.left: parent.left
@@ -250,8 +259,8 @@ Item {
         Loader {
             id: expandedLoader
 
-            visible: root.isExpanded
-            sourceComponent: root.expandedContent
+            visible: root.isExpandedStateActive
+            sourceComponent: root.expandedStateContent
 
             anchors.right: parent.right
             anchors.left: parent.left

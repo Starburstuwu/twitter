@@ -366,7 +366,7 @@ PageType {
             }
         }
 
-        expandedContent: ColumnLayout {
+        expandedStateContent: ColumnLayout {
             id: moreActionsDrawerContent
 
             anchors.top: parent.top
@@ -458,7 +458,7 @@ PageType {
             }
         }
 
-        expandedContent: Item {
+        expandedStateContent: Item {
             implicitHeight: importSitesDrawer.expandedHeight
 
             Connections {

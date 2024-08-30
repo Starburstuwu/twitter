@@ -127,7 +127,7 @@ PageType {
                     parent: root
 
                     onClosed: {
-                        console.log(objectName, " is closing...")
+                        console.log(objectName, " was closed...")
                         FocusController.reload()
                     }
                 }
@@ -143,12 +143,12 @@ PageType {
 
         onClosed: {
             if (!GC.isMobile()) {
-                console.log(objectName, " is closing...")
-                FocusController.reload()
+                console.log(objectName, " was closed")
+                // FocusController.reload()
             }
         }
 
-        collapsedContent: Item {
+        collapsedStateContent: Item {
             implicitHeight: Qt.platform.os !== "ios" ? root.height * 0.9 : screen.height * 0.77
             Component.onCompleted: {
                 drawer.expandedHeight = implicitHeight
@@ -157,6 +157,7 @@ PageType {
                 target: drawer
                 enabled: !GC.isMobile()
                 function onActiveFocusChanged() {
+                    console.log("===>> drawer focuse changed")
                     if (drawer.activeFocus && !drawer.isOpened) {
                         collapsedButtonChevron.forceActiveFocus()
                     }
@@ -190,7 +191,7 @@ PageType {
 
                     Connections {
                         target: drawer
-                        function onEntered() {
+                        function onCursorEntered() {
                             if (drawer.isCollapsed) {
                                 collapsedButtonChevron.backgroundColor = collapsedButtonChevron.hoveredColor
                                 collapsedButtonHeader.opacity = 0.8
@@ -199,7 +200,7 @@ PageType {
                             }
                         }
 
-                        function onExited() {
+                        function onCursorExited() {
                             if (drawer.isCollapsed) {
                                 collapsedButtonChevron.backgroundColor = collapsedButtonChevron.defaultColor
                                 collapsedButtonHeader.opacity = 1
@@ -228,7 +229,7 @@ PageType {
                         text: ServersModel.defaultServerName
                         horizontalAlignment: Qt.AlignHCenter
 
-                        KeyNavigation.tab: tabBar
+                        // KeyNavigation.tab: tabBar
 
                         Behavior on opacity {
                             PropertyAnimation { duration: 200 }
@@ -240,7 +241,7 @@ PageType {
 
                         Layout.leftMargin: 8
 
-                        visible: drawer.isCollapsed
+                        visible: drawer.isCollapsedStateActive
 
                         hoverEnabled: false
                         image: "qrc:/images/controls/chevron-down.svg"
@@ -255,7 +256,7 @@ PageType {
 
                         Keys.onEnterPressed: collapsedButtonChevron.clicked()
                         Keys.onReturnPressed: collapsedButtonChevron.clicked()
-                        Keys.onTabPressed: lastItemTabClicked()
+                        // Keys.onTabPressed: lastItemTabClicked()
 
 
                         onClicked: {
@@ -287,8 +288,8 @@ PageType {
             Connections {
                 target: drawer
                 enabled: !GC.isMobile()
-                function onIsCollapsedChanged() {
-                    if (!drawer.isCollapsed) {
+                function onIsCollapsedStateActiveChanged() {
+                    if (!drawer.isCollapsedStateActive) {
                         console.log(objectName, " is not collapsed...")
                         FocusController.reload()
                     }
@@ -330,7 +331,7 @@ PageType {
                         }
 
                         drawerParent: root
-                        KeyNavigation.tab: serversMenuContent
+                        // KeyNavigation.tab: serversMenuContent
 
                         listView: HomeContainersListView {
                             id: containersListView
@@ -405,11 +406,12 @@ PageType {
                 }
 
 
-                activeFocusOnTab: true
-                focus: true
+                // activeFocusOnTab: true
+                // focus: true
 
                 property int focusItemIndex: 0
                 onActiveFocusChanged: {
+                    console.log("===>> serversMenuContent activeFocusChanged")
                     if (activeFocus) {
                         serversMenuContent.focusItemIndex = 0
                         serversMenuContent.itemAtIndex(focusItemIndex).forceActiveFocus()
@@ -417,6 +419,7 @@ PageType {
                 }
 
                 onFocusItemIndexChanged: {
+                    console.log("===>> serversMenuContent onFocusItemIndexChanged")
                     const focusedElement = serversMenuContent.itemAtIndex(focusItemIndex)
                     if (focusedElement) {
                         if (focusedElement.y + focusedElement.height > serversMenuContent.height) {
@@ -433,8 +436,8 @@ PageType {
                 Connections {
                     target: drawer
                     enabled: !GC.isMobile()
-                    function onIsCollapsedChanged() {
-                        if (drawer.isCollapsed) {
+                    function onIsCollapsedStateActiveChanged() {
+                        if (drawer.isCollapsedStateActive) {
                             const item = serversMenuContent.itemAtIndex(serversMenuContent.focusItemIndex)
                             if (item) { item.serverRadioButtonProperty.focus = false }
                         }
@@ -460,8 +463,9 @@ PageType {
                     implicitHeight: serverRadioButtonContent.implicitHeight
 
                     onActiveFocusChanged: {
+                        console.log("===>> menuContentDelegate activeFocusChanged")
                         if (activeFocus) {
-                            serverRadioButton.forceActiveFocus()
+                            // serverRadioButton.forceActiveFocus()
                         }
                     }
 
@@ -506,7 +510,7 @@ PageType {
                                     enabled: false
                                 }
 
-                                Keys.onTabPressed: serverInfoButton.forceActiveFocus()
+                                // Keys.onTabPressed: serverInfoButton.forceActiveFocus()
                                 Keys.onEnterPressed: serverRadioButton.clicked()
                                 Keys.onReturnPressed: serverRadioButton.clicked()
                             }
