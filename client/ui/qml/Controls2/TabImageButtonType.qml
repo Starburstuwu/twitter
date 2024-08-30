@@ -19,7 +19,12 @@ TabButton {
         console.debug("--> Tab is pressed on ", objectName)
         FocusController.nextKeyTabItem()
     }
-
+    
+    Keys.onBacktabPressed: {
+        console.debug("--> Shift+Tab is pressed on ", objectName)
+        FocusController.previousKeyTabItem()
+    }
+    
     property string borderFocusedColor: AmneziaStyle.color.paleGray
     property int borderFocusedWidth: 1
 

@@ -19,13 +19,6 @@ import "../Components"
 PageType {
     id: root
 
-    defaultActiveFocusItem: focusItem
-
-
-    Component.onCompleted: {
-        console.log("############ pageHome completed")
-    }
-
     Connections {
         objectName: "pageControllerConnections"
 
@@ -92,7 +85,6 @@ PageType {
             BasicButtonType {
                 id: splitTunnelingButton
                 objectName: "splitTunnelingButton"
-                property bool focusable: true
 
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
                 Layout.bottomMargin: 34
@@ -124,8 +116,6 @@ PageType {
                 Keys.onEnterPressed: splitTunnelingButton.clicked()
                 Keys.onReturnPressed: splitTunnelingButton.clicked()
 
-                KeyNavigation.tab: drawer
-
                 onClicked: {
                     homeSplitTunnelingDrawer.open()
                 }
@@ -137,15 +127,13 @@ PageType {
                     parent: root
 
                     onClosed: {
-                        if (!GC.isMobile()) {
-                            focusItem.forceActiveFocus()
-                        }
+                        console.log(objectName, " is closing...")
+                        FocusController.reload()
                     }
                 }
             }
         }
     }
-
 
     DrawerType2 {
         id: drawer
@@ -155,7 +143,8 @@ PageType {
 
         onClosed: {
             if (!GC.isMobile()) {
-                focusItem.forceActiveFocus()
+                console.log(objectName, " is closing...")
+                FocusController.reload()
             }
         }
 
@@ -300,7 +289,8 @@ PageType {
                 enabled: !GC.isMobile()
                 function onIsCollapsedChanged() {
                     if (!drawer.isCollapsed) {
-                        focusItem1.forceActiveFocus()
+                        console.log(objectName, " is not collapsed...")
+                        FocusController.reload()
                     }
                 }
             }
@@ -317,11 +307,6 @@ PageType {
                     spacing: 8
 
                     visible: !ServersModel.isDefaultServerFromApi
-
-                    Item {
-                        id: focusItem1
-                        KeyNavigation.tab: containersDropDown
-                    }
 
                     DropDownType {
                         id: containersDropDown
@@ -349,10 +334,12 @@ PageType {
 
                         listView: HomeContainersListView {
                             id: containersListView
+                            objectName: "containersListView"
                             rootWidth: root.width
                             onVisibleChanged: {
                                 if (containersDropDown.visible && !GC.isMobile()) {
-                                    focusItem1.forceActiveFocus()
+                                    console.log(objectName, " is changing visibility...")
+                                    // FocusController.reload()
                                 }
                             }
 

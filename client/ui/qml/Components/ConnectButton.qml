@@ -21,6 +21,11 @@ Button {
         console.debug("--> Tab is pressed on ", objectName)
         FocusController.nextKeyTabItem()
     }
+
+    Keys.onBacktabPressed: {
+        console.debug("--> Shift+Tab is pressed on ", objectName)
+        FocusController.previousKeyTabItem()
+    }
     
     implicitWidth: 190
     implicitHeight: 190

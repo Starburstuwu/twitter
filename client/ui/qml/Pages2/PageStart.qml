@@ -15,15 +15,8 @@ import "../Components"
 PageType {
     id: root
 
-    defaultActiveFocusItem: null // homeTabButton
-
     property bool isControlsDisabled: false
     property bool isTabBarDisabled: false
-    property Item focusedItem: null
-
-    Component.onCompleted: {
-        console.log("############ pageStart completed")
-    }
 
     Connections {
         objectName: "pageControllerConnection"

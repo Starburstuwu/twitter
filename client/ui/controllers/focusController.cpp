@@ -1,8 +1,10 @@
 #include "focusController.h"
-#include <QQmlContext>
-#include <algorithm>
+
 #include <QQuickWindow>
-#include <iostream>
+#include <QQmlApplicationEngine>
+#include <QQuickItem>
+#include <QPointF>
+#include <QRectF>
 
 
 const QList<QObject*> getChildren(QObject* obj) {
@@ -78,12 +80,14 @@ bool isOnTheScene(QObject* object)
 template<typename T>
 void printItems(const T& items, QObject* current_item)
 {
+    qDebug() << "**********************************************";
     for(const auto& item : items) {
         QQuickItem* i = qobject_cast<QQuickItem*>(item);
         QPointF coords {getCenterPointOnScene(i)};
         QString prefix = current_item == i ? "==>" : "";
         qDebug() << prefix << " Item: " << i;
     }
+    qDebug() << "**********************************************";
 }
 
 QList<QObject*> FocusController::getSubChain(QObject* item)
@@ -133,11 +137,20 @@ void FocusController::nextKeyTabItem()
     qDebug() << "--> Current focus was changed to " << m_focused_item;
 }
 
-QObject *FocusController::previousKeyTabItem()
+void FocusController::previousKeyTabItem()
 {
-    qDebug() << "previousKeyTabItem" << "triggered";
+    reload();
 
-    return {};
+    if (m_focused_item_index <= 0) {
+        m_focused_item_index = m_focus_chain.size() - 1;
+    } else {
+        m_focused_item_index--;
+    }
+
+    m_focused_item = qobject_cast<QQuickItem*>(m_focus_chain.at(m_focused_item_index));
+    m_focused_item->forceActiveFocus(Qt::TabFocusReason);
+
+    qDebug() << "--> Current focus was changed to " << m_focused_item;
 }
 
 QObject *FocusController::nextKeyUpItem()

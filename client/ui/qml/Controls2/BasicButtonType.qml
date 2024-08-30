@@ -41,6 +41,11 @@ Button {
         FocusController.nextKeyTabItem()
     }
     
+    Keys.onBacktabPressed: {
+        console.debug("--> Shift+Tab is pressed on ", objectName)
+        FocusController.previousKeyTabItem()
+    }
+    
     implicitHeight: 56
 
     hoverEnabled: true

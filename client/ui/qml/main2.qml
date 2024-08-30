@@ -30,10 +30,6 @@ Window  {
         PageController.closeWindow()
     }
 
-    Component.onCompleted: {
-        console.log("############ mainWindow completed")
-    }
-
     title: "AmneziaVPN"
 
     Connections {
@@ -139,11 +135,6 @@ Window  {
 
         DrawerType2 {
             id: privateKeyPassphraseDrawer
-
-
-            Component.onCompleted: {
-                console.log("############ privateKeyPassphraseDrawer completed")
-            }
 
             anchors.fill: parent
             expandedHeight: root.height * 0.35
